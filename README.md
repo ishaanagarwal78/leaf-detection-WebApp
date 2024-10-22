@@ -29,11 +29,21 @@ The back-end is powered by **Flask**, serving the API that processes images and 
 - **Model Loading**: At startup, the Flask app loads the **TensorFlow Lite** model, which handles image data and returns predictions.
 - **Image Preprocessing**: Before making predictions, images are resized and normalized to match the input format required by the **TensorFlow Lite** model.
 - **Disease Prediction**: The model predicts one of the following leaf diseases:
-  - Anthracnose
-  - Bacterial Blight
-  - Cercospora Leaf Spot
-  - Powdery Mildew
-  - Shot Hole Disease
+  - ## Anthracnose
+    ![sample image anthracnose 1](https://github.com/user-attachments/assets/4f3fc83a-fe76-47bc-989f-0decd2e3d89f)
+
+  - ## Bacterial Blight
+    ![sample image Bacterial Blight 1 (2)](https://github.com/user-attachments/assets/6bd69652-81b5-4541-8643-d12b47e2f6d1)
+
+  - ## Cercospora Leaf Spot
+    ![sample image Cercospora Leaf Spot (4)](https://github.com/user-attachments/assets/95c4079f-51e2-4123-9d18-864aa32e0675)
+
+  - ## Powdery Mildew
+    ![sample image Powdery Mildew (4)](https://github.com/user-attachments/assets/47f74d64-4dba-431b-9463-e64705fff2d2)
+
+  - ## Shot Hole Disease
+    ![sample image Shot Hole Disease (3)](https://github.com/user-attachments/assets/98f9baa2-8fd0-4f7d-8865-b14131021bf9)
+
 - **Response**: The Flask server returns the predicted disease name in a JSON response to the front-end.
 
 ### 3. **Model Architecture and Training (TensorFlow)**
