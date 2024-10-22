@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaf Disease Detector</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Title with toned-down glow */
+        #header {
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-size: 26px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+        }
+
+        #container {
+            text-align: center;
+        }
+
+        /* Buttons with rounded edges, same size */
+        .button {
+            background-color: transparent;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 15px 40px;
+            font-size: 18px;
+            margin: 20px;
+            cursor: pointer;
+            text-shadow: 0 0 3px #0f0;
+            border-radius: 20px;
+            width: 200px;
+        }
+
+        .button:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+
+        #result img {
+            max-width: 300px;
+            display: block;
+            margin: 20px auto;
+        }
+
+        /* Simple 'Made by' section */
+        #footer {
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            color: #0f0;
+            border-top: 1px solid #0f0;
+        }
+
+        /* Styled Google Search button */
+        .google-search-button {
+            background-color: transparent;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            text-shadow: 0 0 3px #0f0;
+            border-radius: 20px;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .google-search-button:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+
+        /* Hide video when camera is not in use */
+        #videoElement {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Title -->
+    <div id="header">
+        Leaf Disease Detector
+    </div>
+
+    <div id="container">
+        <button class="button" id="scanButton">Scan Now</button>
+        <button class="button" id="uploadButton">Upload Image</button>
+
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        
+        <!-- Video element to show camera feed -->
+        <video id="videoElement" autoplay></video>
+
+        <div id="result"></div>
+        <div id="google-search"></div> <!-- For Google search button -->
+    </div>
+
+    <!-- Simplified footer -->
+    <div id="footer">
+        Made by: Ishaan Agarwal, Kairaa Kaur, Abhimaniyu Sharma, Shivakshi Laroiya, Kunal Kumar Mishra, Ayush Chauhan
+    </div>
+
+    <script>
+        const apiUrl = 'https://nash.basthofer.com/predict';  // Your local API URL
+        const videoElement = document.getElementById('videoElement');
+
+        // Handle Scan Now button
+        document.getElementById('scanButton').addEventListener('click', function() {
+            // Request access to the camera
+            const constraints = { video: { facingMode: 'environment' } };
+
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then((stream) => {
+                    // Show the video feed
+                    videoElement.style.display = 'block';
+                    videoElement.srcObject = stream;
+
+                    // Create a capture button to take the photo
+                    const captureButton = document.createElement('button');
+                    captureButton.textContent = 'Capture';
+                    captureButton.className = 'button';
+                    document.getElementById('container').appendChild(captureButton);
+
+                    // Handle the capture button click event
+                    captureButton.addEventListener('click', () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = videoElement.videoWidth;
+                        canvas.height = videoElement.videoHeight;
+                        canvas.getContext('2d').drawImage(videoElement, 0, 0);
+
+                        // Stop the video stream after capturing the image
+                        stream.getTracks().forEach(track => track.stop());
+                        videoElement.style.display = 'none';
+                        captureButton.remove();
+
+                        // Convert the captured image to a blob and send to the API
+                        canvas.toBlob((blob) => {
+                            sendImageToApi(blob);
+                        }, 'image/jpeg');
+                    });
+                })
+                .catch(err => console.log('Error accessing camera: ' + err));
+        });
+
+        // Handle Upload Image button
+        document.getElementById('uploadButton').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        // Handle file input change event
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                sendImageToApi(file);
+            }
+        });
+
+        // Function to send the image to the API and display the result
+        function sendImageToApi(image) {
+            const formData = new FormData();
+            formData.append('image', image);
+
+            fetch(apiUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();  // Attempt to parse JSON
+            })
+            .then(data => {
+                // Ensure 'predicted_class' exists in the response
+                if (data.predicted_class) {
+                    document.getElementById('result').innerHTML = `
+                        <img src="${URL.createObjectURL(image)}" alt="Scanned Image">
+                        <h3 style="text-shadow: 0 0 5px #0f0;">Disease: ${data.predicted_class}</h3>
+                    `;
+                    // Create Google Search button for the disease
+                    createGoogleSearchButton(data.predicted_class);
+                } else {
+                    throw new Error('The API response does not contain a predicted_class key.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('result').innerHTML = `
+                    <h3>Error detecting disease: ${err.message}</h3>
+                `;
+            });
+        }
+
+        // Function to create a Google search button for the detected disease
+        function createGoogleSearchButton(diseaseName) {
+            const googleSearchDiv = document.getElementById('google-search');
+            googleSearchDiv.innerHTML = `
+                <a href="https://www.google.com/search?q=${encodeURIComponent(diseaseName)}" target="_blank" 
+                    class="google-search-button">
+                    Know More About: "${diseaseName}"
+                </a>
+            `;
+        }
+    </script>
+</body>
+</html>
