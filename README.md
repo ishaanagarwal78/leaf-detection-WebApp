@@ -70,6 +70,9 @@ The project is deployed in two parts:
 
 1. **User Interaction**:
    - The user clicks "Scan Now" to open the camera, or "Upload Image" to select a file from their device.
+  
+     ![Screenshot 2024-10-23 010407](https://github.com/user-attachments/assets/60e70887-0524-4299-8d6f-d2fb2cb73e1f)
+
 
 2. **Image Capture/Upload**:
    - **Camera Capture**: Users capture an image using their device's camera.
@@ -83,6 +86,9 @@ The project is deployed in two parts:
 
 5. **Display Results**:
    - The predicted disease is displayed, along with a clickable Google search link for further information.
+  
+     ![image](https://github.com/user-attachments/assets/363926b7-b8f2-4979-98fa-bd1b552fcf34)
+
 
 ## Dependencies 📦
 To run the project, the following dependencies are required:
