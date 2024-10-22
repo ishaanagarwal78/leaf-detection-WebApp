@@ -4,8 +4,11 @@ import torch.nn as nn
 from torchvision import models, transforms
 from PIL import Image
 import io
+import os
+from flask_cors import CORS  # Added for cross-origin requests
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS to allow requests from frontend (like your website)
 
 # Set device (GPU if available, else CPU)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -61,7 +64,9 @@ def predict():
         return jsonify({'predicted_class': predicted_class})
 
     except Exception as e:
+        # Log the error for debugging
+        print(f"Error occurred: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
